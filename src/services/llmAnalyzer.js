@@ -1,7 +1,8 @@
-const Anthropic = require('@anthropic-ai/sdk');
-const { anthropicKey } = require('../config');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { geminiKey } = require('../config');
 
-const client = new Anthropic({ apiKey: anthropicKey });
+const genAI = new GoogleGenerativeAI(geminiKey);
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 const SYSTEM_PROMPT = `
 You are GitGuard AI, an expert code reviewer integrated into GitHub.
@@ -20,7 +21,7 @@ corrected code here
 
 Severity levels:
 - 🔴 CRITICAL  → Security vulnerabilities, data loss risk
-- 🟡 WARNING   → Bugs, logic errors, performance issues  
+- 🟡 WARNING   → Bugs, logic errors, performance issues
 - 🔵 INFO      → Best practice suggestions
 
 If no issues found, respond with:
@@ -28,19 +29,12 @@ If no issues found, respond with:
 `;
 
 async function analyzeCodeDiff(diffText) {
-  const message = await client.messages.create({
-    model:      'claude-sonnet-4-20250514',
-    max_tokens: 1500,
-    system:     SYSTEM_PROMPT,
-    messages: [
-      {
-        role:    'user',
-        content: `Please review this pull request diff:\n\n${diffText}`,
-      }
-    ],
-  });
+  const prompt = SYSTEM_PROMPT + `\n\nPlease review this pull request diff:\n\n` + diffText;
 
-  return message.content[0].text;
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+
+  return response.text();
 }
 
 module.exports = { analyzeCodeDiff };
