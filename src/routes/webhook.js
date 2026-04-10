@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifySignature } = require('../utils/verifySignature');
-//const { analyzePR } = require('../services/analyzer');
+const { analyzePR } = require('../services/analyzer');
 
 router.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
 
@@ -21,7 +21,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
 
     res.status(202).json({ message: 'Accepted' });
 
-   // analyzePR(payload).catch(err => console.error('Analysis error:', err));
+   analyzePR(payload).catch(err => console.error('Analysis error:', err));
 
   } else {
     res.status(200).json({ message: 'Event ignored' });
