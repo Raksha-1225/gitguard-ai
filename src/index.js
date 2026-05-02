@@ -1,15 +1,26 @@
+require('dotenv').config();
+
 const express = require('express');
-const { port } = require('./config');
-const webhookRouter = require('./routes/webhook');
+const cors = require('cors');
+const webhookRoutes = require('./routes/webhook');
+const apiRoutes = require('./routes/api');
+const { initDatabase } = require('./services/database');
 
 const app = express();
 
-app.use('/webhook', webhookRouter);
+app.use(express.json());
+app.use(cors());
+app.use('/webhook', webhookRoutes);
+app.use('/api', apiRoutes);
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/', (req, res) => {
+  res.json({ status: 'GitGuard AI is running! 🛡️' });
 });
 
-app.listen(port, () => {
-  console.log(`🛡️  GitGuard AI running on port ${port}`);
+const PORT = process.env.PORT || 3001;
+
+initDatabase();
+
+app.listen(PORT, () => {
+  console.log(`🛡️  GitGuard AI server running on http://localhost:${PORT}`);
 });
